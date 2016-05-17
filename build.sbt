@@ -1,6 +1,6 @@
 name := "play-datetime-routes"
 organization := "com.github.dgilling"
-version := "1.0-SNAPSHOT"
+version := "0.1.1"
 
 publishMavenStyle := true
 isSnapshot := true

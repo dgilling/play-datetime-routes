@@ -8,7 +8,7 @@ import scala.util.matching.Regex._
 /**
   * Created by derric on 5/12/16.
   */
-trait JodaDateTimeRoutes$ { self: JodaFormat =>
+trait JodaDateTimeRoutes { self: JodaFormat =>
 
   val format: String
 
@@ -25,7 +25,7 @@ trait JodaDateTimeRoutes$ { self: JodaFormat =>
   )
 }
 
-object JodaDateTimeRoutes$ extends JodaDateTimeRoutes$
+object JodaDateTimeRoutes extends JodaDateTimeRoutes
   with DefaultJodaFormat
 
 object JodaPeriodConverter {
