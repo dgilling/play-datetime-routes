@@ -21,7 +21,7 @@ Add dependency and routesImport to your Build.scala
 ```scala
     resolvers += "jitpack" at "https://jitpack.io"
 
-	libraryDependencies += "com.github.dgilling" % "play-datetime-routes" % "0.1.0"	
+	libraryDependencies += "com.github.dgilling" % "play-datetime-routes" % "0.1.1"	
     
     routesImport += "com.github.dgilling.datetimeroutes.Routes._"
   )
