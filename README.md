@@ -1,6 +1,6 @@
 # play-datetime-routes
 
-[![Release](https://jitpack.io/v/User/Repo.svg)](https://jitpack.io/#dgilling/play-datetime-routes)
+[![Release](https://jitpack.io/v/dgilling/play-datetime-routes.svg)](https://jitpack.io/#dgilling/play-datetime-routes)
 
 QueryString / Path Binder for Play 2.x
 
@@ -19,7 +19,9 @@ query_param=2016-05-16T12:00.000    (Exact Date)
 Add dependency and routesImport to your Build.scala
 
 ```scala
-    libraryDependencies +=  "com.github.dgilling" %% "play-datetime-routes" % "1.0-SNAPSHOT"
+    resolvers += "jitpack" at "https://jitpack.io"
+
+	libraryDependencies += "com.github.dgilling" % "play-datetime-routes" % "0.1.0"	
     
     routesImport += "com.github.dgilling.datetimeroutes.Routes._"
   )
