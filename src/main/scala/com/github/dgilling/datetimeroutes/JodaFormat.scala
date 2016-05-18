@@ -8,5 +8,5 @@ trait JodaFormat {
 }
 
 trait DefaultJodaFormat extends JodaFormat {
-  val format = "yyyyMMdd'T'HH:mm:ss.SSS"
+  val format = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 }
