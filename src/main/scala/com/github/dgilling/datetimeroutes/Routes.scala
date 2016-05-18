@@ -6,5 +6,5 @@ package com.github.dgilling.datetimeroutes
 
 object Routes extends CustomJodaRoutes {
 
-    override val format: String = "yyyyMMdd'T'HH:mm:ss.SSS"
+    override val format: String = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 }
