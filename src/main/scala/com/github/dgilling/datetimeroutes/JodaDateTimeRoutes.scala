@@ -31,9 +31,11 @@ object JodaDateTimeRoutes extends JodaDateTimeRoutes
 object JodaPeriodConverter {
 
   val SecondsRegex = """([+-]?)(\d+)[Ss]""".r
-  val MinutesRegex = """([+-]?)(\d+)[Mm]""".r
+  val MinutesRegex = """([+-]?)(\d+)[m]""".r
   val HoursRegex = """([+-]?)(\d+)[Hh]""".r
+  val DaysRegex = """([+-]?)(\d+)[Dd]""".r
   val WeeksRegex = """([+-]?)(\d+)[Ww]""".r
+  val MonthsRegex = """([+-]?)(\d+)[M]""".r
 
   def parsePeriod(dateTime: String, format: String): DateTime = {
     dateTime match {
@@ -41,7 +43,9 @@ object JodaPeriodConverter {
       case SecondsRegex(sign: String, value: String) => DateTime.now.plusSeconds((sign + value).toInt)
       case MinutesRegex(sign, value) => DateTime.now.plusMinutes((sign + value).toInt)
       case HoursRegex(sign, value) => DateTime.now.plusHours((sign + value).toInt)
+      case DaysRegex(sign, value) => DateTime.now.plusDays((sign + value).toInt)
       case WeeksRegex(sign, value) => DateTime.now.plusWeeks((sign + value).toInt)
+      case MonthsRegex(sign, value) => DateTime.now.plusMonths((sign + value).toInt)
       case _ => DateTimeFormat.forPattern(format).parseDateTime(dateTime)
     }
   }
