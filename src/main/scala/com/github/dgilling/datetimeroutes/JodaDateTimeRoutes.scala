@@ -54,6 +54,9 @@ object JodaPeriodConverter {
   val MonthsRegex = """([+-]?)(\d+)[M]""".r
 
   trait Interval
+  object Seconds extends Interval
+  object Minutes extends Interval
+  object Hourly extends Interval
   object Daily extends Interval
   object Weekly extends Interval
   object Monthly extends Interval
@@ -62,6 +65,9 @@ object JodaPeriodConverter {
     // if timerange is relative, then from will be reset to start of the interval
     val fromResetFcn = Option((interval: Interval, dateTime: DateTime) => {
       Option(interval).collect {
+        case Seconds => (dateTime: DateTime) => dateTime.withMillisOfSecond(0)
+        case Minutes => (dateTime: DateTime) => dateTime.withSecondOfMinute(0).withMillisOfSecond(0)
+        case Hourly => (dateTime: DateTime) => dateTime.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)
         case Daily => (dateTime: DateTime) => dateTime.withMillisOfDay(0)
         case Weekly => (dateTime: DateTime) => dateTime.withDayOfWeek(1).withMillisOfDay(0)
         case Monthly => (dateTime: DateTime) => dateTime.withDayOfMonth(1).withMillisOfDay(0)
@@ -75,9 +81,15 @@ object JodaPeriodConverter {
                     intervalResetBoundaryFcn: Option[(Interval, DateTime) => DateTime] = None): DateTime = {
     val dateTime = dateString match {
       case "now" => DateTime.now(dateTimeZone)
-      case SecondsRegex(sign: String, value: String) => DateTime.now(dateTimeZone).plusSeconds((sign + value).toInt)
-      case MinutesRegex(sign, value) => DateTime.now(dateTimeZone).plusMinutes((sign + value).toInt)
-      case HoursRegex(sign, value) => DateTime.now(dateTimeZone).plusHours((sign + value).toInt)
+      case SecondsRegex(sign: String, value: String) =>
+        val time = DateTime.now(dateTimeZone).plusSeconds((sign + value).toInt)
+        intervalResetBoundaryFcn.map(_(Seconds, time)).getOrElse(time)
+      case MinutesRegex(sign, value) =>
+        val time = DateTime.now(dateTimeZone).plusMinutes((sign + value).toInt)
+        intervalResetBoundaryFcn.map(_(Minutes, time)).getOrElse(time)
+      case HoursRegex(sign, value) =>
+        val time = DateTime.now(dateTimeZone).plusHours((sign + value).toInt)
+        intervalResetBoundaryFcn.map(_(Hourly, time)).getOrElse(time)
       case DaysRegex(sign, value)  =>
         val time = DateTime.now(dateTimeZone).plusDays((sign + value).toInt)
         intervalResetBoundaryFcn.map(_(Daily, time)).getOrElse(time)
