@@ -3,10 +3,10 @@ package com.github.dgilling.datetimeroutes
 /**
   * Created by derric on 5/16/16.
   */
-trait JodaFormat {
-  val format: String
+trait JodaFormats {
+  val formats: Seq[String]
 }
 
-trait DefaultJodaFormat extends JodaFormat {
-  val format = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+trait DefaultJodaFormats extends JodaFormats {
+  val formats = Seq("yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 }

@@ -4,6 +4,8 @@ import org.joda.time.format.DateTimeFormat
 import play.api.mvc.{PathBindable, QueryStringBindable}
 import org.joda.time.{DateTime, DateTimeZone}
 
+import scala.annotation.tailrec
+import scala.util.{Success, Try}
 import scala.util.matching.Regex._
 
 /**
@@ -24,25 +26,25 @@ class DateTimeParsing[A](parse: (String, String, DateTimeZone) => A, serialize: 
   def unbind(key: String, value: A) = key + "=" + serialize(value)
 }
 
-trait JodaDateTimeRoutes { self: JodaFormat =>
+trait JodaDateTimeRoutes { self: JodaFormats =>
 
-  val format: String
+  val formats: Seq[String]
 
   implicit object queryStringDateRangeBinder extends DateTimeParsing[DateTime](
-    (key,  dateString, timeZone) =>  if (key.toLowerCase == "from") JodaPeriodConverter.parseFromPeriod(dateString, format, timeZone) else JodaPeriodConverter.parsePeriod(dateString, format, timeZone),
-    _.toString(format),
+    (key,  dateString, timeZone) =>  if (key.toLowerCase == "from") JodaPeriodConverter.parseFromPeriod(dateString, formats, timeZone) else JodaPeriodConverter.parsePeriod(dateString, formats, timeZone),
+    _.toString(formats.head),
     (key: String, e: Exception) => "Cannot parse parameter %s as com.github.dgilling.datetimeroutes.DateRange: %s".format(key, e.getMessage)
   )
 
   implicit object pathPeriodBinder extends PathBindable.Parsing[DateTime](
-    dateString =>  JodaPeriodConverter.parsePeriod(dateString,  format, DateTimeZone.UTC),
-    _.toString(format),
+    dateString =>  JodaPeriodConverter.parsePeriod(dateString,  formats, DateTimeZone.UTC),
+    _.toString(formats.head),
     (key: String, e: Exception) => "Cannot parse parameter %s as org.joda.time.DateTime: %s".format(key, e.getMessage)
   )
 }
 
 object JodaDateTimeRoutes extends JodaDateTimeRoutes
-  with DefaultJodaFormat
+  with DefaultJodaFormats
 
 object JodaPeriodConverter {
 
@@ -61,7 +63,7 @@ object JodaPeriodConverter {
   object Weekly extends Interval
   object Monthly extends Interval
 
-  def parseFromPeriod(fromString: String, format: String, timeZone: DateTimeZone): DateTime = {
+  def parseFromPeriod(fromString: String, formats: Seq[String], timeZone: DateTimeZone): DateTime = {
     // if timerange is relative, then from will be reset to start of the interval
     val fromResetFcn = Option((interval: Interval, dateTime: DateTime) => {
       Option(interval).collect {
@@ -74,10 +76,19 @@ object JodaPeriodConverter {
       }.map(_(dateTime)).getOrElse(dateTime)
     })
 
-    parsePeriod(fromString, format, timeZone, fromResetFcn)
+    parsePeriod(fromString, formats, timeZone, fromResetFcn)
   }
 
-  def parsePeriod(dateString: String, format: String, dateTimeZone: DateTimeZone,
+  @tailrec
+  def parseTime(dateString: String, formats: Seq[String]): DateTime = {
+    Try(DateTimeFormat.forPattern(formats.head).parseDateTime(dateString)) match {
+      case Success(parsedTime) => parsedTime
+      case _ if formats.tail.nonEmpty => parseTime(dateString, formats.tail)
+      case _ => throw new IllegalArgumentException(s"Unable to parse $dateString with supported timezone formats")
+    }
+  }
+
+  def parsePeriod(dateString: String, formats: Seq[String], dateTimeZone: DateTimeZone,
                     intervalResetBoundaryFcn: Option[(Interval, DateTime) => DateTime] = None): DateTime = {
     val dateTime = dateString match {
       case "now" => DateTime.now(dateTimeZone)
@@ -99,7 +110,8 @@ object JodaPeriodConverter {
       case MonthsRegex(sign, value) =>
         val time = DateTime.now(dateTimeZone).plusMonths((sign + value).toInt)
         intervalResetBoundaryFcn.map(_(Monthly, time)).getOrElse(time)
-      case _ => DateTimeFormat.forPattern(format).parseDateTime(dateString)
+      case _ =>
+        parseTime(dateString, formats)
     }
     // backend always process dateTime in UTC, convert to UTC time
     dateTime.toDateTime(DateTimeZone.UTC)
