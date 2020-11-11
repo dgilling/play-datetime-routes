@@ -32,7 +32,11 @@ trait JodaDateTimeRoutes { self: JodaFormats =>
   val formats: Seq[String]
 
   implicit object queryStringDateRangeBinder extends DateTimeParsing[DateTime](
-    (key, dateString, timeZone, weekStartsOn) =>  if (key.toLowerCase == "from") JodaPeriodConverter.parseFromPeriod(dateString, formats, timeZone, weekStartsOn) else JodaPeriodConverter.parsePeriod(dateString, formats, timeZone, weekStartsOn),
+    (key, dateString, timeZone, weekStartsOn) =>  if (key.toLowerCase == "from") {
+      JodaPeriodConverter.parseFromPeriod(dateString, formats, timeZone, weekStartsOn)
+    } else {
+      JodaPeriodConverter.parseToPeriod(dateString, formats, timeZone, weekStartsOn)
+    },
     _.toString(formats.head),
     (key: String, e: Exception) => "Cannot parse parameter %s as com.github.dgilling.datetimeroutes.DateRange: %s".format(key, e.getMessage)
   )
@@ -80,6 +84,22 @@ object JodaPeriodConverter {
     parsePeriod(fromString, formats, timeZone, weekStartsOn, fromResetFcn)
   }
 
+  def parseToPeriod(fromString: String, formats: Seq[String], timeZone: DateTimeZone, weekStartsOn: Int): DateTime = {
+    // if timerange is relative, then from will be reset to start of the interval
+    val fromResetFcn = Option((interval: Interval, dateTime: DateTime) => {
+      Option(interval).collect {
+        case Seconds => (dateTime: DateTime) => dateTime.plusSeconds(1).withMillisOfSecond(0).minusMillis(1)
+        case Minutes => (dateTime: DateTime) => dateTime.plusMinutes(1).withSecondOfMinute(0).withMillisOfSecond(0).minusSeconds(1)
+        case Hourly => (dateTime: DateTime) => dateTime.plusHours(1).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(1)
+        case Daily => (dateTime: DateTime) => dateTime.plusDays(1).withMillisOfDay(0).minusHours(1)
+        case Weekly => (dateTime: DateTime) => dateTime.plusWeeks(1).withDayOfWeek(weekStartsOn).withMillisOfDay(0).minusDays(1)
+        case Monthly => (dateTime: DateTime) => dateTime.plusMonths(1).withDayOfMonth(1).withMillisOfDay(0).minusDays(1)
+      }.map(_(dateTime)).getOrElse(dateTime)
+    })
+
+    parsePeriod(fromString, formats, timeZone, weekStartsOn, fromResetFcn)
+  }
+
   @tailrec
   def parseTime(dateString: String, formats: Seq[String]): DateTime = {
     Try(DateTimeFormat.forPattern(formats.head).parseDateTime(dateString)) match {
@@ -94,7 +114,7 @@ object JodaPeriodConverter {
     val dateTime = dateString match {
       case "now" =>
         // Align to boundary for caching, since "now" is always changing
-        val time = DateTime.now(dateTimeZone).plusHours(1)
+        val time = DateTime.now(dateTimeZone)
         intervalResetBoundaryFcn.map(_(Hourly, time)).getOrElse(time)
       case SecondsRegex(sign: String, value: String) =>
         val time = DateTime.now(dateTimeZone).plusSeconds((sign + value).toInt)
