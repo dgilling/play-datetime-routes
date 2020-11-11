@@ -92,7 +92,10 @@ object JodaPeriodConverter {
   def parsePeriod(dateString: String, formats: Seq[String], dateTimeZone: DateTimeZone, weekStartsOn: Int,
                     intervalResetBoundaryFcn: Option[(Interval, DateTime) => DateTime] = None): DateTime = {
     val dateTime = dateString match {
-      case "now" => DateTime.now(dateTimeZone)
+      case "now" =>
+        // Align to boundary for caching, since "now" is always changing
+        val time = DateTime.now(dateTimeZone).plusHours(1)
+        intervalResetBoundaryFcn.map(_(Hourly, time)).getOrElse(time)
       case SecondsRegex(sign: String, value: String) =>
         val time = DateTime.now(dateTimeZone).plusSeconds((sign + value).toInt)
         intervalResetBoundaryFcn.map(_(Seconds, time)).getOrElse(time)
