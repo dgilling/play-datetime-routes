@@ -89,11 +89,11 @@ object JodaPeriodConverter {
     val fromResetFcn = Option((interval: Interval, dateTime: DateTime) => {
       Option(interval).collect {
         case Seconds => (dateTime: DateTime) => dateTime.plusSeconds(1).withMillisOfSecond(0).minusMillis(1)
-        case Minutes => (dateTime: DateTime) => dateTime.plusMinutes(1).withSecondOfMinute(0).withMillisOfSecond(0).minusSeconds(1)
-        case Hourly => (dateTime: DateTime) => dateTime.plusHours(1).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(1)
-        case Daily => (dateTime: DateTime) => dateTime.plusDays(1).withMillisOfDay(0).minusHours(1)
-        case Weekly => (dateTime: DateTime) => dateTime.plusWeeks(1).withDayOfWeek(weekStartsOn).withMillisOfDay(0).minusDays(1)
-        case Monthly => (dateTime: DateTime) => dateTime.plusMonths(1).withDayOfMonth(1).withMillisOfDay(0).minusDays(1)
+        case Minutes => (dateTime: DateTime) => dateTime.plusMinutes(1).withSecondOfMinute(0).withMillisOfSecond(0).minusMillis(1)
+        case Hourly => (dateTime: DateTime) => dateTime.plusHours(1).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0).minusMillis(1)
+        case Daily => (dateTime: DateTime) => dateTime.plusDays(1).withMillisOfDay(0).minusMillis(1)
+        case Weekly => (dateTime: DateTime) => dateTime.plusWeeks(1).withDayOfWeek(weekStartsOn).withMillisOfDay(0).minusMillis(1)
+        case Monthly => (dateTime: DateTime) => dateTime.plusMonths(1).withDayOfMonth(1).withMillisOfDay(0).minusMillis(1)
       }.map(_(dateTime)).getOrElse(dateTime)
     })
 
