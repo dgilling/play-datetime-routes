@@ -1,6 +1,6 @@
 name := "play-datetime-routes"
 organization := "com.github.dgilling"
-version := "1.1.0"
+version := "1.1.1"
 
 publishMavenStyle := true
 isSnapshot := true
@@ -13,3 +13,5 @@ val playJsonVersion = "2.6.14"
 libraryDependencies += "joda-time" % "joda-time" % "2.12.0"
 libraryDependencies ++= Seq("com.typesafe.play" %% "play-json" % playJsonVersion,
   "com.typesafe.play" %% "play" % playVersion)
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
