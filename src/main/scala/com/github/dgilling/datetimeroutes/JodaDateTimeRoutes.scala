@@ -38,13 +38,13 @@ trait JodaDateTimeRoutes { self: JodaFormats =>
       JodaPeriodConverter.parseToPeriod(dateString, formats, timeZone, weekStartsOn)
     },
     _.toString(formats.head),
-    (key: String, e: Exception) => "Cannot parse parameter %s as com.github.dgilling.datetimeroutes.DateRange: %s".format(key, e.getMessage)
+    (key: String, e: Exception) => "Invalid value for parameter '%s'. %s. Expected a valid date-time string or relative period (e.g. now, -7d, -1M).".format(key, e.getMessage)
   )
 
   implicit object pathPeriodBinder extends PathBindable.Parsing[DateTime](
     dateString =>  JodaPeriodConverter.parsePeriod(dateString, formats, DateTimeZone.UTC, 1),
     _.toString(formats.head),
-    (key: String, e: Exception) => "Cannot parse parameter %s as org.joda.time.DateTime: %s".format(key, e.getMessage)
+    (key: String, e: Exception) => "Invalid value for parameter '%s'. %s. Expected a valid date-time string or relative period (e.g. now, -7d, -1M).".format(key, e.getMessage)
   )
 }
 
