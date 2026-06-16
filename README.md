@@ -4,6 +4,15 @@
 
 QueryString / Path Binder for Play 2.x
 
+## How to Publish
+
+1. Bump the version in `build.sbt`
+2. Merge changes to `master`
+3. Create a git tag matching the new bumped version (e.g. `v1.1.2`)
+4. Create a GitHub release from that tag
+5. JitPack will automatically build and serve the new version at [jitpack.io/#dgilling/play-datetime-routes](https://jitpack.io/#dgilling/play-datetime-routes)
+6. Update the version in any codebases that depend on this library (e.g. `analytics-search`)
+
 ## Usage
 
 Based originally on play-joda-routes-binder. Simple binder for using
@@ -47,7 +56,6 @@ object MyRoutes {
 ```scala
 routesImport += "example.MyRoutes.myJodaRoutes._"
 ```
-
 
 ## License
 [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
